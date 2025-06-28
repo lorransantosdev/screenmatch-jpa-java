@@ -3,6 +3,7 @@ package br.com.alura.screenmatch.principal;
 import br.com.alura.screenmatch.model.Serie;
 import br.com.alura.screenmatch.model.SerieData;
 import br.com.alura.screenmatch.model.SeasonData;
+import br.com.alura.screenmatch.repository.SerieRepository;
 import br.com.alura.screenmatch.service.ConsumeApi;
 import br.com.alura.screenmatch.service.ConvertData;
 
@@ -10,10 +11,10 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Scanner;
-import java.util.stream.Collectors;
 
 public class Main {
 
+    private SerieRepository serieRepository;
     private Scanner leitura = new Scanner(System.in);
     private ConsumeApi consumo = new ConsumeApi();
     private ConvertData conversor = new ConvertData();
@@ -21,6 +22,10 @@ public class Main {
     private final String API_KEY = "&apikey=6585022c";
 
     private List<SerieData> seriesData = new ArrayList<>();
+
+    public Main(SerieRepository serieRepository) {
+        this.serieRepository = serieRepository;
+    }
 
     public void exibeMenu() {
         int option = -1;
@@ -39,10 +44,10 @@ public class Main {
 
             switch (opcao) {
                 case 1:
-                    buscarSerieWeb();
+                    sourceSerie();
                     break;
                 case 2:
-                    buscarEpisodioPorSerie();
+                    findEpisodePerSerie();
                     break;
 
                 case 3:
@@ -57,21 +62,22 @@ public class Main {
         }
     }
 
-    private void buscarSerieWeb() {
-        SerieData data = getDadosSerie();
-        seriesData.add(data);
+    private void sourceSerie() {
+        SerieData data = getSerieData();
+        Serie serie = new Serie(data);
+        serieRepository.save(serie);
         System.out.println(data);
     }
 
-    private SerieData getDadosSerie() {
+    private SerieData getSerieData() {
         System.out.println("Digite o nome da série para busca");
         var nomeSerie = leitura.nextLine();
         var json = consumo.obterDados(ENDERECO + nomeSerie.replace(" ", "+") + API_KEY);
         return conversor.obterDados(json, SerieData.class);
     }
 
-    private void buscarEpisodioPorSerie(){
-        SerieData serieData = getDadosSerie();
+    private void findEpisodePerSerie(){
+        SerieData serieData = getSerieData();
         List<SeasonData> temporadas = new ArrayList<>();
 
         for (int i = 1; i <= serieData.totalSeason(); i++) {
@@ -83,9 +89,7 @@ public class Main {
     }
 
     private void listSeries() {
-        List<Serie> series = seriesData.stream()
-                        .map(Serie::new)
-                                .toList();
+        List<Serie> series = serieRepository.findAll();
         series.stream()
                 .sorted(Comparator.comparing(Serie::getGenders))
                 .forEach(System.out::println);

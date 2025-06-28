@@ -10,11 +10,11 @@ public class GroqTranslateService {
 
     private static final WebClient webClient = WebClient.builder()
             .baseUrl("https://api.groq.com/openai/v1")
-            .defaultHeader(HttpHeaders.AUTHORIZATION, "Bearer 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")
+            .defaultHeader(HttpHeaders.AUTHORIZATION, "Bearer " + System.getenv("AI_GROQ_API_KEY"))
             .defaultHeader(HttpHeaders.CONTENT_TYPE, "application/json")
             .build();
 
-    public static String traduzirTexto(String text) {
+    public static String translatorText(String text) {
         Map<String, Object> body = Map.of(
                 "model", "meta-llama/llama-4-scout-17b-16e-instruct",
                 "messages", List.of(

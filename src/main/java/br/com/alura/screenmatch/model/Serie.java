@@ -1,17 +1,34 @@
 package br.com.alura.screenmatch.model;
 
 import br.com.alura.screenmatch.service.GroqTranslateService;
+import jakarta.persistence.*;
 
+import java.util.List;
 import java.util.OptionalDouble;
 
+@Entity
+@Table(name = "series")
 public class Serie {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    @Column(unique = true)
     private String title;
     private Integer totalSeason;
     private Double assessment;
+
+    @Enumerated(EnumType.STRING)
     private Category genders;
     private String actors;
     private String poster;
     private String synopsis;
+
+    @Transient
+    private List<Episode> episodes;
+
+    public Serie() { }
 
     public Serie(SerieData serieData) {
         this.title = serieData.title();
@@ -20,7 +37,16 @@ public class Serie {
         this.genders = Category.fromString(serieData.gender().split(",")[0].trim());
         this.actors = serieData.actors();
         this.poster = serieData.poster();
-        this.synopsis = GroqTranslateService.traduzirTexto(serieData.synopsis()).trim();
+        this.synopsis = GroqTranslateService.translatorText(serieData.synopsis()).trim();
+    }
+
+
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
     }
 
     public String getTitle() {
